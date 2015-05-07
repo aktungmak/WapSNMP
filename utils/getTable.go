@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"time"
 	WapSNMP "github.com/cdevr/WapSNMP"
+	"time"
 )
-	//"google3/experimental/users/cde/WapSNMP/WapSNMP"
+
+//"google3/experimental/users/cde/WapSNMP/WapSNMP"
 
 var target = flag.String("target", "", "The host to connect to")
 var community = flag.String("community", "", "The community to use")
