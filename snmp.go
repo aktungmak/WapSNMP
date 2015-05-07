@@ -530,7 +530,7 @@ func (w *WapSNMP) doGetV3(oid Oid, request BERType) (*Oid, interface{}, error) {
 	respPrivParam := v3HeaderDecoded[6].(string)
 
 	if len(respAuthParam) == 0 || len(respPrivParam) == 0 {
-		return nil, nil, fmt.Errorf("Error,response is not encrypted.")
+		return nil, nil, fmt.Errorf("Error: response is not encrypted.")
 	}
 
 	encryptedResp := decodedResponse[4].(string)
@@ -653,11 +653,11 @@ func (w WapSNMP) GetTable(oid Oid) (map[string]interface{}, error) {
 	return result, nil
 }
 
-// ParseTrap parses a received SNMP trap and returns  a map of oid to objects
-func (w WapSNMP) ParseTrap(response []byte) error {
+// ParseTrap parses a received SNMP trap and returns a map of oid to objects
+func (w WapSNMP) ParseTrap(response []byte) (map[string]interface{}, error) {
 	decodedResponse, err := DecodeSequence(response)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var community string
 
@@ -680,7 +680,7 @@ func (w WapSNMP) ParseTrap(response []byte) error {
 		v3HeaderDecoded, err := DecodeSequence([]byte(v3HeaderStr))
 		if err != nil {
 			fmt.Printf("Error 2 decoding:%v\n", err)
-			return err
+			return nil, err
 		}
 
 		w.engineID = v3HeaderDecoded[1].(string)
@@ -692,10 +692,10 @@ func (w WapSNMP) ParseTrap(response []byte) error {
 		fmt.Printf("username=%s\n", w.user)
 
 		if len(respAuthParam) == 0 || len(respPrivParam) == 0 {
-			return errors.New("response is not encrypted")
+			return nil, errors.New("response is not encrypted")
 		}
 		if len(w.Trapusers) == 0 {
-			return errors.New("No SNMP V3 trap user configured")
+			return nil, errors.New("No SNMP V3 trap user configured")
 		}
 
 		founduser := false
@@ -710,7 +710,7 @@ func (w WapSNMP) ParseTrap(response []byte) error {
 			}
 		}
 		if !founduser {
-			return errors.New("No matching user found")
+			return nil, errors.New("No matching user found")
 		}
 
 		//keys
@@ -724,7 +724,7 @@ func (w WapSNMP) ParseTrap(response []byte) error {
 		pduDecoded, err := DecodeSequence([]byte(plainResp))
 		if err != nil {
 			fmt.Printf("Error 3 decoding:%v\n", err)
-			return err
+			return nil, err
 		}
 		decodedResponse = pduDecoded
 	}
@@ -741,14 +741,17 @@ func (w WapSNMP) ParseTrap(response []byte) error {
 		varbinds = respPacket[4].([]interface{})
 	}
 
+	ret := make(map[string]interface{})
+
 	for i := 1; i < len(varbinds); i++ {
-		varoid := varbinds[i].([]interface{})[1]
+		varoid := varbinds[i].([]interface{})[1].(Oid)
 		result := varbinds[i].([]interface{})[2]
 		fmt.Printf("%s = %s\n", varoid, result)
+		ret[varoid.String()] = result
 	}
 	fmt.Printf("\n")
 
-	return nil
+	return ret, nil
 }
 
 // Close the net.conn in WapSNMP.
