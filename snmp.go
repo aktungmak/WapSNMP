@@ -659,18 +659,14 @@ func (w WapSNMP) ParseTrap(response []byte) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	var community string
 
 	// Fetch the varbinds out of the packet.
 	snmpVer := decodedResponse[1].(int)
+	// community := decodedResponse[2].(string)
 	if snmpVer <= 1 {
 		snmpVer++
 	}
-	fmt.Printf("Version:%d\n", snmpVer)
-	if snmpVer < 3 {
-		community = decodedResponse[2].(string)
-		fmt.Printf("Community:%s\n", community)
-	} else {
+	if snmpVer >= 3 {
 		/*
 			for i, val := range decodedResponse{
 				fmt.Printf("Resp:%v:type=%v\n",i,reflect.TypeOf(val));
@@ -689,7 +685,7 @@ func (w WapSNMP) ParseTrap(response []byte) (map[string]interface{}, error) {
 		w.user = v3HeaderDecoded[4].(string)
 		respAuthParam := v3HeaderDecoded[5].(string)
 		respPrivParam := v3HeaderDecoded[6].(string)
-		fmt.Printf("username=%s\n", w.user)
+		// fmt.Printf("username=%s\n", w.user)
 
 		if len(respAuthParam) == 0 || len(respPrivParam) == 0 {
 			return nil, errors.New("response is not encrypted")
@@ -733,9 +729,9 @@ func (w WapSNMP) ParseTrap(response []byte) (map[string]interface{}, error) {
 	respPacket := decodedResponse[3].([]interface{})
 	var varbinds []interface{}
 	if snmpVer == 1 {
-		fmt.Printf("OID: %s\n", respPacket[1])
-		fmt.Printf("Agent Address: %s\n", respPacket[2])
-		fmt.Printf("Generic Trap: %d\n", respPacket[3])
+		// fmt.Printf("OID: %s\n", respPacket[1])
+		// fmt.Printf("Agent Address: %s\n", respPacket[2])
+		// fmt.Printf("Generic Trap: %d\n", respPacket[3])
 		varbinds = respPacket[6].([]interface{})
 	} else {
 		varbinds = respPacket[4].([]interface{})
@@ -746,10 +742,10 @@ func (w WapSNMP) ParseTrap(response []byte) (map[string]interface{}, error) {
 	for i := 1; i < len(varbinds); i++ {
 		varoid := varbinds[i].([]interface{})[1].(Oid)
 		result := varbinds[i].([]interface{})[2]
-		fmt.Printf("%s = %s\n", varoid, result)
+		// fmt.Printf("%s = %s\n", varoid, result)
 		ret[varoid.String()] = result
 	}
-	fmt.Printf("\n")
+	// fmt.Printf("\n")
 
 	return ret, nil
 }

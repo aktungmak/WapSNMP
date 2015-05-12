@@ -1,7 +1,7 @@
 package main
 
 import (
-	snmp "github.com/tiebingzhang/WapSNMP"
+	snmp "github.com/aktungmak/wapsnmp"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	WapSNMP "github.com/cdevr/WapSNMP"
+	WapSNMP "github.com/aktungmak/wapsnmp"
 	"time"
 )
 
